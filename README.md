@@ -28,3 +28,10 @@ Output: An element ai of A such that rank(ai, A) = k.
 * (3) All the remaining N elements are sent to processor 1 
 * (4) Processor 1 solves the remaining problem sequentially
 
+Implementation
+==============================
+We are implementing the proposed algorithm using parallel distributed memory systems Message Passing Interface standard
+in C#
+
+The implementation of the MPI is MPI.NET: High-Performance C# Library for Message Passing 
+http://www.osl.iu.edu/research/mpi.net/
