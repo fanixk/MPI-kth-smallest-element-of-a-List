@@ -18,5 +18,11 @@ namespace MpiKthElement
             }
             return randomList;
         }
+
+
+        public static int ComoputeMedian(int[] sourceNumbers)
+        {
+            return sourceNumbers.GetMedian();
+        }
     }
 }
