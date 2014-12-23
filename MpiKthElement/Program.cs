@@ -16,7 +16,6 @@ namespace MpiKthElement
             using (new MPI.Environment(ref args, Threading.Multiple))
             {
                 // MPI program goes here!
-
                 int repeatTimes = 0;
                 List<int> nList = new List<int>();
                 Intracommunicator comm = Communicator.world;
@@ -31,7 +30,6 @@ namespace MpiKthElement
                     {
                         throw (new Exception("n must be integer"));
                     }
-
 
                     //find n/cp
                     repeatTimes = n / MPI.Communicator.world.Size;
@@ -51,8 +49,6 @@ namespace MpiKthElement
                 }
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} {1}", Communicator.world.Rank, distributedList.Count());
-
-
             }
 
         }
