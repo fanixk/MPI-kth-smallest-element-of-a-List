@@ -1,1 +1,1 @@
-"F:\Program Files\Microsoft Compute Cluster Pack\Bin\mpiexec.exe" -n 8 bin\debug\MpiKthElement.exe
+mpiexec.exe -n 8 bin\debug\MpiKthElement.exe

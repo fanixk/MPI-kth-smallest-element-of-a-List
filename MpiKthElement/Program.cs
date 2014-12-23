@@ -16,48 +16,43 @@ namespace MpiKthElement
             using (new MPI.Environment(ref args, Threading.Multiple))
             {
                 // MPI program goes here!
-                Console.WriteLine("Hello, World! from rank " + Communicator.world.Rank
-                  + " (running on " + MPI.Environment.ProcessorName + ")");
 
-                //set N:=n
-                Console.Write("Give N :");
-                string userInputN = Console.ReadLine();
-                int n;
-                if (!int.TryParse(userInputN, out n))
-                {
-                    throw (new Exception("n must be integer"));
-                }
-
-                
-                //find n/cp
-                int repeatTimes = n / MPI.Communicator.world.Size;
-                Console.WriteLine("Number of processes : {0}", MPI.Communicator.world.Size);
-                Console.WriteLine("Iteration will processed {0} times", repeatTimes);
-
-                var nList = Utilities.FillListWithRandomNumbers(n);
-
-                Console.ReadLine();
-                /*
+                int repeatTimes = 0;
+                List<int> nList = new List<int>();
                 Intracommunicator comm = Communicator.world;
+                int[] distributedList;
                 if (comm.Rank == 0)
                 {
-                    // program for rank 0
-                    comm.Send("Rosie", 1, 0);
+                    //set N:=n
+                    Console.Write("Give N :");
+                    string userInputN = Console.ReadLine();
+                    int n;
+                    if (!int.TryParse(userInputN, out n))
+                    {
+                        throw (new Exception("n must be integer"));
+                    }
 
-                    // receive the final message
-                    string msg = comm.Receive<string>(Communicator.anySource, 0);
 
-                    Console.WriteLine("Rank " + comm.Rank + " received message \"" + msg + "\".");
+                    //find n/cp
+                    repeatTimes = n / MPI.Communicator.world.Size;
+                    //broadcast repeat times
+                    comm.Broadcast<int>(ref repeatTimes, 0);
+                    nList = Utilities.FillListWithRandomNumbers(n);
                 }
-                else // not rank 0
+
+                //scatter all n elements among the p processorsm each processor i with ni = n/p elements
+                distributedList = new int[repeatTimes];
+                distributedList = comm.ScatterFromFlattened<int>(nList.ToArray(), repeatTimes, 0);
+
+                if (comm.Rank == 0)
                 {
-                    // program for all other ranks
-                    string msg = comm.Receive<string>(comm.Rank - 1, 0);
+                    Console.WriteLine("Number of processes : {0}", MPI.Communicator.world.Size);
+                    Console.WriteLine("Iteration will processed {0} times", repeatTimes);
+                }
+                comm.Barrier();
+                Console.WriteLine("List from p:{0} {1}", Communicator.world.Rank, distributedList.Count());
 
-                    Console.WriteLine("Rank " + comm.Rank + " received message \"" + msg + "\".");
 
-                    comm.Send(msg + ", " + comm.Rank, (comm.Rank + 1) % comm.Size, 0);
-                }*/
             }
 
         }
