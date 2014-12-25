@@ -20,9 +20,15 @@ namespace MpiKthElement
         }
 
 
-        public static int ComoputeMedian(int[] sourceNumbers)
+        public static int ComputeMedian(int[] sourceNumbers)
         {
             return sourceNumbers.GetMedian();
+        }
+
+        public static void Pause()
+        {
+            Console.Write("Press any key to continue...");
+            Console.ReadKey(true);
         }
     }
 }
