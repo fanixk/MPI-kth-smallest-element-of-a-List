@@ -49,7 +49,6 @@ namespace MpiKthElement
                 }
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} {1}", Communicator.world.Rank, distributedList.Count());
-                Utilities.Pause();
             }
 
         }
