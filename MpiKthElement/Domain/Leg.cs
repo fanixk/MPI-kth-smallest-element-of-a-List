@@ -10,10 +10,10 @@ namespace MpiKthElement.Domain
     public class Leg
     {
         //Less
-        public int l { get; set; }
+        public int less { get; set; }
         //Equal
-        public int e { get; set; }
+        public int eq { get; set; }
         //Greater
-        public int g { get; set; }
+        public int greater { get; set; }
     }
 }

@@ -17,10 +17,10 @@ namespace MpiKthElement
             using (new MPI.Environment(ref args, Threading.Multiple))
             {
                 // MPI program goes here!
+                Intracommunicator comm = Communicator.world;
                 int np = MPI.Communicator.world.Size;
                 int[] sendcounts = null;
                 List<int> nList = new List<int>();
-                Intracommunicator comm = Communicator.world;
                 int[] distributedList = null;
                 int n = 0;
                 
@@ -37,26 +37,16 @@ namespace MpiKthElement
                     nList = Utilities.FillListWithRandomNumbers(n);
                 }
 
-                //ScatterV (for non divisible arrays)
+                //ScatterV (calculate items for non divisible arrays)
                 sendcounts = new int[np];
-                int rem = n % np;
-                for (int i = 0; i < np; i++)
-                {
-                    sendcounts[i] = n / np;
-                    if (rem > 0)
-                    {
-                        sendcounts[i]++;
-                        rem--;
-                    }
-                }
-
-                comm.Broadcast<int>(ref sendcounts, 0);
-
-                //scatter all n elements among the p processorsm each processor i with ni = n/p elements
-                // distributedList = new int[repeatTimes];
-                //Console.WriteLine("repeat times {0}", repeatTimes);
+                int[] sendCounts = Utilities.calcNoElems(n, np);
                 
-                comm.ScatterFromFlattened<int>(nList.ToArray(), sendcounts, 0, ref distributedList);
+
+                //send number of list items to each process
+                comm.Broadcast<int>(ref sendCounts, 0);
+
+                //scatter all n elements among the p processors each processor i with ni = n/p elements                
+                comm.ScatterFromFlattened<int>(nList.ToArray(), sendCounts, 0, ref distributedList);
 
                 if (comm.Rank == 0)
                 {
@@ -68,27 +58,34 @@ namespace MpiKthElement
                 //compute median
                 //step 2.1 each processor computes the median mi of its ni elements
                 var localMedian = distributedList.GetMedian();
-                MedianWithElements medianWithElements = new MedianWithElements();
-                medianWithElements.Median = localMedian;
-                medianWithElements.Elements = distributedList;
+                MedianWithElemCount medianWithElemCount = new MedianWithElemCount()
+                {
+                    Median = localMedian,
+                    ElemCount = distributedList.Count()
+                };
+           
                 //step 2.2 each processor i sends mi and ni to processor 1
-                var listOfMedians = comm.Gather(medianWithElements, 0);
+                var listOfMedians = comm.Gather(medianWithElemCount, 0);
+
                 //step 3.3 Processor 1 computes the weighted median M
                 int weightedMedian = 0;
                 if (comm.Rank == 0)
                 {
-                    weightedMedian = Utilities.ComputeWeightedMedian(listOfMedians);
+                    weightedMedian = Utilities.ComputeWeightedMedian(listOfMedians, n);
+                    Console.WriteLine("weighted median = {0}", weightedMedian);
                 }
                 
                 //step 2.4 processor 1 broadcast to all processors
                 comm.Broadcast(ref weightedMedian, 0);
+     
                 //step 2.5 Each processor process l,e,g
                 var localLeg = Utilities.ComputeLeg(weightedMedian, distributedList);
+
                 //step 2.6 each processor sends l,e,g to processor 1
                 var legs = comm.Gather(localLeg, 0);
                 if (comm.Rank == 0)
                 {
-                    Console.WriteLine("l={0}, e={1}, g{2}", legs[0].l, legs[0].e, legs[0].g);
+                    Console.WriteLine("l={0}, e={1}, g{2}", legs[0].less, legs[0].eq, legs[0].greater);
                 }
             }
 

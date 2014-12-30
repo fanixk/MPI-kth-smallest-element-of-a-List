@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace MpiKthElement.Domain
 {
     [Serializable]
-    public class MedianWithElements
+    public class MedianWithElemCount
     {
         public int Median { get; set; }
-        public IEnumerable<int> Elements { get; set; }
+        public int ElemCount { get; set; }
     }
 }
