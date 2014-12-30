@@ -33,7 +33,7 @@ namespace MpiKthElement
             var sorted = source.OrderBy(x => x.Median);
 
             var medians = sorted.Select(x => x.Median).ToArray();
-            var weights = sorted.Select(x => x.ElemCount).ToArray();
+            var weights = sorted.Select(x => x.ElemCount / n).ToArray();
 
             double S = weights.Sum();
 
