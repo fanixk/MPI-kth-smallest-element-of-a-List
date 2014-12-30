@@ -30,8 +30,10 @@ namespace MpiKthElement
         /// </summary>
         public static int ComputeWeightedMedian(MedianWithElemCount[] source, int n)
         {
-            var medians = source.Select(x => x.Median).ToArray();
-            var weights = source.Select(x => x.ElemCount).ToArray();
+            var sorted = source.OrderBy(x => x.Median);
+
+            var medians = sorted.Select(x => x.Median).ToArray();
+            var weights = sorted.Select(x => x.ElemCount).ToArray();
 
             double S = weights.Sum();
 
