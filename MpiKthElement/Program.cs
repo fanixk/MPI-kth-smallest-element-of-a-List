@@ -17,30 +17,49 @@ namespace MpiKthElement
             {
                 // MPI program goes here!
                 int repeatTimes = 0;
+                int[] sendcounts = null;
                 List<int> nList = new List<int>();
                 Intracommunicator comm = Communicator.world;
-                int[] distributedList;
+                int[] distributedList = null;
+                int n = 0; ;
+
+
                 if (comm.Rank == 0)
                 {
                     //set N:=n
                     Console.Write("Give N :");
                     string userInputN = Console.ReadLine();
-                    int n;
                     if (!int.TryParse(userInputN, out n))
                     {
                         throw (new Exception("n must be integer"));
                     }
-
+                    
                     //find n/cp
                     repeatTimes = n / MPI.Communicator.world.Size;
-                    //broadcast repeat times
-                    comm.Broadcast<int>(ref repeatTimes, 0);
                     nList = Utilities.FillListWithRandomNumbers(n);
+                   
                 }
 
+                sendcounts = new int[MPI.Communicator.world.Size];
+                int rem = n % MPI.Communicator.world.Size;
+                for (int i = 0; i < MPI.Communicator.world.Size; i++)
+                {
+                    sendcounts[i] = n / MPI.Communicator.world.Size;
+                    if (rem > 0)
+                    {
+                        sendcounts[i]++;
+                        rem--;
+                    }
+
+
+                }
+                comm.Broadcast<int>(ref sendcounts, 0);
+
                 //scatter all n elements among the p processorsm each processor i with ni = n/p elements
-                distributedList = new int[repeatTimes];
-                distributedList = comm.ScatterFromFlattened<int>(nList.ToArray(), repeatTimes, 0);
+                // distributedList = new int[repeatTimes];
+                //Console.WriteLine("repeat times {0}", repeatTimes);
+                
+                comm.ScatterFromFlattened<int>(nList.ToArray(), sendcounts, 0, ref distributedList);
 
                 if (comm.Rank == 0)
                 {
