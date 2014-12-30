@@ -18,7 +18,6 @@ namespace MpiKthElement
             {
                 // MPI program goes here!
                 int np = MPI.Communicator.world.Size;
-                int repeatTimes = 0;
                 int[] sendcounts = null;
                 List<int> nList = new List<int>();
                 Intracommunicator comm = Communicator.world;
@@ -62,7 +61,6 @@ namespace MpiKthElement
                 if (comm.Rank == 0)
                 {
                     Console.WriteLine("Number of processes : {0}", MPI.Communicator.world.Size);
-                    Console.WriteLine("Iteration will processed {0} times", repeatTimes);
                 }
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} {1}", Communicator.world.Rank, distributedList.Count());
