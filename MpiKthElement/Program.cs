@@ -92,7 +92,7 @@ namespace MpiKthElement
                 var summLess = comm.Reduce(localLeg.Less, Operation<int>.Add, 0);
                 var summEqual = comm.Reduce(localLeg.Eq, Operation<int>.Add, 0);
                 var summGreater = comm.Reduce(localLeg.Greater, Operation<int>.Add, 0);
-
+                //2.8 Processor 1 broadcasts L,E,G summaries to all other processors
                 comm.Broadcast(ref summLess, 0);
                 comm.Broadcast(ref summEqual, 0);
                 comm.Broadcast(ref summGreater, 0);
