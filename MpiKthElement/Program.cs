@@ -67,7 +67,7 @@ namespace MpiKthElement
                 //step 2.2 each processor i sends mi and ni to processor 1
                 var listOfMedians = comm.Gather(medianWithElemCount, 0);
 
-                //step 3.3 Processor 1 computes the weighted median M
+                //step 2.3 Processor 1 computes the weighted median M
                 int weightedMedian = 0;
                 if (comm.Rank == 0)
                 {
@@ -85,8 +85,19 @@ namespace MpiKthElement
                 var legs = comm.Gather(localLeg, 0);
                 if (comm.Rank == 0)
                 {
-                    Console.WriteLine("l={0}, e={1}, g{2}", legs[0].less, legs[0].eq, legs[0].greater);
+                    Console.WriteLine("l={0}, e={1}, g{2}", legs[0].Less, legs[0].Eq, legs[0].Greater);
                 }
+
+                //step 2.7 Processor 1 computes L,E,G Sums respectively the total numbers of elements less than, equal to, or greater than M
+                var summLess = comm.Reduce(localLeg.Less, Operation<int>.Add, 0);
+                var summEqual = comm.Reduce(localLeg.Eq, Operation<int>.Add, 0);
+                var summGreater = comm.Reduce(localLeg.Greater, Operation<int>.Add, 0);
+
+                comm.Broadcast(ref summLess, 0);
+                comm.Broadcast(ref summEqual, 0);
+                comm.Broadcast(ref summGreater, 0);
+
+                Console.WriteLine("sum less={0}, sum eq={1}, sum greater={2}", summLess, summEqual, summGreater);
             }
 
         }
