@@ -59,7 +59,7 @@ namespace MpiKthElement
             };
         }
 
-        public static int[] calcNoElems(int itemLen, int np)
+        public static int[] CalcNoElems(int itemLen, int np)
         {
             int[] sendCounts = new int[np];
             int rem = itemLen % np;

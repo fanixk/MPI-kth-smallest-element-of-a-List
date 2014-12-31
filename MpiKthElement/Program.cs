@@ -39,7 +39,7 @@ namespace MpiKthElement
 
                 //ScatterV (calculate items for non divisible arrays)
                 sendcounts = new int[np];
-                int[] sendCounts = Utilities.calcNoElems(n, np);
+                int[] sendCounts = Utilities.CalcNoElems(n, np);
                 
 
                 //send number of list items to each process
