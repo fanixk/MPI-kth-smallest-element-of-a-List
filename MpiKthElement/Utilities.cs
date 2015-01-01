@@ -53,9 +53,9 @@ namespace MpiKthElement
         {
             return new Leg()
             {
-                less = distributedList.Where(x => x < weightedMedian).Count(),
-                eq = distributedList.Where(x => x == weightedMedian).Count(),
-                greater = distributedList.Where(x => x > weightedMedian).Count()
+                Less = distributedList.Where(x => x < weightedMedian).Count(),
+                Eq = distributedList.Where(x => x == weightedMedian).Count(),
+                Greater = distributedList.Where(x => x > weightedMedian).Count()
             };
         }
 
