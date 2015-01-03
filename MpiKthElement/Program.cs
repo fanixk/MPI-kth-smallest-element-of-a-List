@@ -107,6 +107,38 @@ namespace MpiKthElement
                 comm.Broadcast(ref summGreater, 0);
 
                 Console.WriteLine("sum less={0}, sum eq={1}, sum greater={2}", summLess, summEqual, summGreater);
+
+                bool solutionFoundinM = false;
+                //step 2.9
+                // if L<k<L+E then return solution M and stop
+                if (summLess < k && k < (summLess + summEqual))
+                {
+                    solutionFoundinM = true;
+                    comm.Send<bool>(solutionFoundinM, 0, 0);
+                }
+                // if K <= L then each processor discards all but those elements less than M and set N:=L
+                else if (k <= summLess)
+                {
+                    for(int i=0; i<= distributedList.Count(); i++)
+                    {
+                        //discart all those elements less than M
+                        if (distributedList[i] < weightedMedian)
+                        {
+                            distributedList.RemoveAt(i);
+                        }
+                        //set N:=L
+                        
+                    }
+                }
+
+                if (comm.Rank == 0)
+                {
+                    comm.Receive(MPI.Communicator.anySource, 0, out solutionFoundinM);
+                    if (solutionFoundinM)
+                    {
+                        Console.WriteLine("Solution Found in M and is : {0}", weightedMedian);
+                    }
+                }
             }
 
         }
