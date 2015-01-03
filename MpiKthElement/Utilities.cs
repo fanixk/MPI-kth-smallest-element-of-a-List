@@ -15,7 +15,7 @@ namespace MpiKthElement
             List<int> randomList = new List<int>();
             for (int i = 0; i < listSize; i++)
             {
-                randomList.Add(rnd.Next(0, 100));
+                randomList.Add(rnd.Next(0, 10));
             }
             return randomList;
         }
@@ -73,6 +73,33 @@ namespace MpiKthElement
                 }
             }
             return sendCounts;
+        }
+
+        public static int SolveSequentially(int[] nList, int k)
+        {
+            //Processor 1 solves the remaining problem sequentially
+            var p1weightedMedian = nList.GetMedian();
+            var p1Leg = Utilities.ComputeLeg(p1weightedMedian, nList);
+            // if L<k<L+E then return solution M and stop
+            if (p1Leg.Less < k && k <= (p1Leg.Less + p1Leg.Eq))
+            {
+                return p1weightedMedian;
+            }
+            else if (k <= p1Leg.Less)
+            {
+                nList = nList.Where(x => x > p1weightedMedian).ToArray();
+                return SolveSequentially(nList, k);
+            }
+            else if (k > p1Leg.Less + p1Leg.Eq)
+            {
+                for (int i = 0; i < nList.Length; i++)
+                {
+                    nList = nList.Where(x => x < p1weightedMedian).ToArray();
+                    k = k - (p1Leg.Less + p1Leg.Eq);
+                    return SolveSequentially(nList, k);
+                }
+            }
+            return p1weightedMedian;
         }
 
     }
