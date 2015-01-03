@@ -23,7 +23,8 @@ namespace MpiKthElement
                 List<int> nList = new List<int>();
                 int[] distributedList = null;
                 int n = 0;
-                
+                int k = 0;
+
                 if (comm.Rank == 0)
                 {
                     //set N:=n
@@ -32,6 +33,14 @@ namespace MpiKthElement
                     if (!int.TryParse(userInputN, out n))
                     {
                         throw (new Exception("n must be integer"));
+                    }
+
+                    //set k
+                    Console.Write("Give k (kth element):");
+                    string userInputK = Console.ReadLine();
+                    if (!int.TryParse(userInputK, out k))
+                    {
+                        throw (new Exception("k must be integer"));
                     }
                     
                     nList = Utilities.FillListWithRandomNumbers(n);
