@@ -35,6 +35,10 @@ namespace MpiKthElement
                         throw (new Exception("n must be integer"));
                     }
 
+                   
+                    nList = Utilities.FillListWithRandomNumbers(n);
+                    Console.WriteLine("List : {0}", String.Join(",", nList));
+
                     //set k
                     Console.Write("Give k (kth element):");
                     string userInputK = Console.ReadLine();
@@ -43,8 +47,6 @@ namespace MpiKthElement
                         throw (new Exception("k must be integer"));
                     }
 
-                    nList = Utilities.FillListWithRandomNumbers(n);
-                    Console.WriteLine("List : {0}", String.Join(",", nList));
                 }
 
                 //ScatterV (calculate items for non divisible arrays)
@@ -63,7 +65,7 @@ namespace MpiKthElement
                     Console.WriteLine("Number of processes : {0}", MPI.Communicator.world.Size);
                 }
                 comm.Barrier();
-                Console.WriteLine("List from p:{0} {1}", Communicator.world.Rank, distributedList.Count());
+                Console.WriteLine("List from p:{0} : {1}", Communicator.world.Rank, String.Join(",", distributedList));
 
                 //compute median
                 //step 2.1 each processor computes the median mi of its ni elements
