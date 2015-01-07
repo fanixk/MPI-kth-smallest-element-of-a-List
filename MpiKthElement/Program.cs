@@ -10,8 +10,6 @@ namespace MpiKthElement
 {
     class Program
     {
-        const int c = 1;
-
         static void Main(string[] args)
         {
             using (new MPI.Environment(ref args, Threading.Multiple))
@@ -98,7 +96,6 @@ namespace MpiKthElement
 
                 //step 2.4 processor 1 broadcast to all processors
                 comm.Broadcast(ref weightedMedian, 0);
-                comm.Barrier();
 
                 //step 2.5 Each processor process l,e,g
                 var localLeg = Utilities.ComputeLeg(weightedMedian, distributedList);
@@ -115,7 +112,6 @@ namespace MpiKthElement
                 comm.Broadcast(ref summLess, 0);
                 comm.Broadcast(ref summEqual, 0);
                 comm.Broadcast(ref summGreater, 0);
-                comm.Barrier();
 
                 //step 2.9
                 // if L<k<L+E then return solution M and stop
@@ -143,7 +139,6 @@ namespace MpiKthElement
                 }
 
                 comm.Broadcast(ref command, 0);
-                comm.Barrier();
                 
                 if (command == "<")
                 {
