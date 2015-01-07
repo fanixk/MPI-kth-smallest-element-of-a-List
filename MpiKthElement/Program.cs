@@ -37,6 +37,10 @@ namespace MpiKthElement
 
                    
                     nList = Utilities.FillListWithRandomNumbers(n);
+                    //nList = new List<int>
+                    //{
+                    //    7, 4, 6, 4, 2, 4, 2, 3
+                    //};
                     Console.WriteLine("List : {0}", String.Join(",", nList));
 
                     //set k
@@ -89,107 +93,82 @@ namespace MpiKthElement
 
                 //step 2.4 processor 1 broadcast to all processors
                 comm.Broadcast(ref weightedMedian, 0);
+                comm.Barrier();
 
                 //step 2.5 Each processor process l,e,g
                 var localLeg = Utilities.ComputeLeg(weightedMedian, distributedList);
 
                 //step 2.6 each processor sends l,e,g to processor 1
                 var legs = comm.Gather(localLeg, 0);
-                if (comm.Rank == 0)
-                {
-                    Console.WriteLine("l={0}, e={1}, g{2}", legs[0].Less, legs[0].Eq, legs[0].Greater);
-                }
 
                 //step 2.7 Processor 1 computes L,E,G Sums respectively the total numbers of elements less than, equal to, or greater than M
                 var summLess = comm.Reduce(localLeg.Less, Operation<int>.Add, 0);
                 var summEqual = comm.Reduce(localLeg.Eq, Operation<int>.Add, 0);
                 var summGreater = comm.Reduce(localLeg.Greater, Operation<int>.Add, 0);
+
                 //2.8 Processor 1 broadcasts L,E,G summaries to all other processors
                 comm.Broadcast(ref summLess, 0);
                 comm.Broadcast(ref summEqual, 0);
                 comm.Broadcast(ref summGreater, 0);
+                comm.Barrier();
 
-                Console.WriteLine("sum less={0}, sum eq={1}, sum greater={2}", summLess, summEqual, summGreater);
-
-                bool solutionFoundinM = false;
                 //step 2.9
                 // if L<k<L+E then return solution M and stop
-                if (summLess < k && k <= (summLess + summEqual))
-                {
-                    solutionFoundinM = true;
-                    if (comm.Rank != 0)
-                    {
-                        comm.Send<bool>(solutionFoundinM, 0, 0);
-                    }
-                }
-                // if K <= L then each processor discards all but those elements less than M and set N:=L
-                else if (k <= summLess)
-                {
-                    for (int i = 0; i < distributedList.Count(); i++)
-                    {
-                        //discart all those elements less than M
-                        distributedList = distributedList.Where(x => x > weightedMedian).ToArray();
-                        //set N:=L
-                        n = summLess;
-                    }
-                    solutionFoundinM = false;
-                    if (comm.Rank != 0)
-                    {
-                        comm.Send<bool>(solutionFoundinM, 0, 0);
-                    }
-                }
-                // if k > L + E then each processor discards all but those elements greater than M and set N:=G and k:=k-(L+E) 
-                else if (k > summLess + summEqual)
-                {
-                    for (int i = 0; i < distributedList.Count(); i++)
-                    {
-                        //discart all those elements less than M
-                        distributedList = distributedList.Where(x => x < weightedMedian).ToArray();
-                        //set N:=G and k:=k-(L+E)
-                        n = summGreater;
-                        k = k - (summLess + summEqual);
-                    }
-                    solutionFoundinM = false;
-                    if (comm.Rank != 0)
-                    {
-                        comm.Send<bool>(solutionFoundinM, 0, 0);
-                    }
-                }
-
-                //reduce sum total of elements number that are distributed among all processors
-                var totalNumberOfRemainingElements = comm.Reduce(distributedList.Length, Operation<int>.Add, 0);
-                int[] remainingElements = new int[totalNumberOfRemainingElements];
-                if (!solutionFoundinM)
-                {
-                    //gather all remaining lists
-                    comm.GatherFlattened(distributedList, 0, ref remainingElements);
-                }
+                string command = "";
                 if (comm.Rank == 0)
                 {
-                    comm.Receive(MPI.Communicator.anySource, 0, out solutionFoundinM);
-                    if (solutionFoundinM)
+                    if (summLess < k && k <= (summLess + summEqual))
                     {
                         Console.WriteLine("Solution Found in M and is : {0}", weightedMedian);
-                    }
-                    else
-                    {
-                        //Processor 1 solves the remaining problem sequentially
-                        nList = Utilities.FillListWithRandomNumbers(n);
-                        var p1weightedMedian = nList.GetMedian();
-                        var p1Leg = Utilities.ComputeLeg(weightedMedian, distributedList);
-                        // if L<k<L+E then return solution M and stop
-                        if (p1Leg.Less < k && k < (p1Leg.Less + p1Leg.Eq))
-                        {
-                            Console.WriteLine("Solution Found in M and is : {0}", p1weightedMedian);
-                        }
-                        else
-                        {
+                        comm.Abort(0);
+                        return;
 
-                            var m = Utilities.SolveSequentially(remainingElements, k);
-                            Console.WriteLine("Solution Found sequentially and is : {0}", m);
-                        }
                     }
+                    else if (k <= summLess)
+                    {
+                        //send command to discard less
+                        command = "<";
+                    }
+                    else if (k > (summLess + summEqual))
+                    {
+                        //send command to discard greater
+                        command = ">";
+                    }
+
                 }
+
+                comm.Broadcast(ref command, 0);
+                comm.Barrier();
+                
+                if (command == ">")
+                {
+                    distributedList = distributedList.Where(x => x > weightedMedian).ToArray();
+                    n = summLess;
+                }
+                else if (command == "<")
+                {
+                    distributedList = distributedList.Where(x => x < weightedMedian).ToArray();
+                    n = summGreater;
+                    k = k - (summLess + summEqual);
+                }
+
+                var totalNumberOfRemainingElements = comm.Reduce(distributedList.Length, Operation<int>.Add, 0);
+                //Console.WriteLine("total remaining elements : {0} p {1}", totalNumberOfRemainingElements, Communicator.world.Rank);
+
+                int[][] rem; 
+                rem = comm.Gather(distributedList, 0);
+
+                if (comm.Rank == 0)
+                {
+
+                    var tempList = rem.ToList();
+                    int[] remainingElements = tempList.SelectMany(i => i).ToArray();
+                    
+                    var m = Utilities.SolveSequentially(remainingElements, k);
+                    Console.WriteLine("Solution Found sequentially and is : {0}", m);
+                    //Console.WriteLine("remaining elements : {0}", String.Join(",", remainingElements));
+                }
+               
             }
 
         }
