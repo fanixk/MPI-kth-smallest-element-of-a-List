@@ -41,6 +41,11 @@ namespace MpiKthElement
                     //{
                     //    7, 4, 6, 4, 2, 4, 2, 3
                     //};
+                    //nList = new List<int>
+                    //{
+                    //    8,5,5,6,3,9,9,3,2,5
+                    //};
+
                     Console.WriteLine("List : {0}", String.Join(",", nList));
 
                     //set k
