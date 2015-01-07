@@ -20,6 +20,8 @@ namespace MpiKthElement
                 int[] sendcounts = null;
                 List<int> nList = new List<int>();
                 int[] distributedList = null;
+                var command = new Discard();
+                command.DiscardType = Discard.Type.None;
                 int n = 0;
                 int k = 0;
 
@@ -115,7 +117,6 @@ namespace MpiKthElement
 
                 //step 2.9
                 // if L<k<L+E then return solution M and stop
-                string command = "";
                 if (comm.Rank == 0)
                 {
                     if (summLess < k && k <= (summLess + summEqual))
@@ -128,24 +129,24 @@ namespace MpiKthElement
                     else if (k <= summLess)
                     {
                         //send command to discard all but those less
-                        command = "<";
+                        command.DiscardType = Discard.Type.AllButLesser;
                     }
                     else if (k > (summLess + summEqual))
                     {
                         //send command to discard all but those greater
-                        command = ">";
+                        command.DiscardType = Discard.Type.AllButGreater;
                     }
 
                 }
 
                 comm.Broadcast(ref command, 0);
                 
-                if (command == "<")
+                if (command.DiscardType == Discard.Type.AllButLesser)
                 {
                     distributedList = distributedList.Where(x => x < weightedMedian).ToArray();
                     n = summLess;
                 }
-                else if (command == ">")
+                else if (command.DiscardType == Discard.Type.AllButGreater)
                 {
                     distributedList = distributedList.Where(x => x > weightedMedian).ToArray();
                     n = summGreater;
