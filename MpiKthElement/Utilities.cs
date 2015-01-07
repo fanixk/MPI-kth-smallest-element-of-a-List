@@ -15,7 +15,7 @@ namespace MpiKthElement
             List<int> randomList = new List<int>();
             for (int i = 0; i < listSize; i++)
             {
-                randomList.Add(rnd.Next(0, 10));
+                randomList.Add(rnd.Next(1, 10));
             }
             return randomList;
         }
