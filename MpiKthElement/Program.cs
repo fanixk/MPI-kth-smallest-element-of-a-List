@@ -131,12 +131,12 @@ namespace MpiKthElement
                     }
                     else if (k <= summLess)
                     {
-                        //send command to discard less
+                        //send command to discard all but those less
                         command = "<";
                     }
                     else if (k > (summLess + summEqual))
                     {
-                        //send command to discard greater
+                        //send command to discard all but those greater
                         command = ">";
                     }
 
@@ -145,19 +145,19 @@ namespace MpiKthElement
                 comm.Broadcast(ref command, 0);
                 comm.Barrier();
                 
-                if (command == ">")
-                {
-                    distributedList = distributedList.Where(x => x > weightedMedian).ToArray();
-                    n = summLess;
-                }
-                else if (command == "<")
+                if (command == "<")
                 {
                     distributedList = distributedList.Where(x => x < weightedMedian).ToArray();
+                    n = summLess;
+                }
+                else if (command == ">")
+                {
+                    distributedList = distributedList.Where(x => x > weightedMedian).ToArray();
                     n = summGreater;
                     k = k - (summLess + summEqual);
                 }
 
-                var totalNumberOfRemainingElements = comm.Reduce(distributedList.Length, Operation<int>.Add, 0);
+                //var totalNumberOfRemainingElements = comm.Reduce(distributedList.Length, Operation<int>.Add, 0);
                 //Console.WriteLine("total remaining elements : {0} p {1}", totalNumberOfRemainingElements, Communicator.world.Rank);
 
                 int[][] rem; 
