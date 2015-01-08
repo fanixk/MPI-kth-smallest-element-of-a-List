@@ -22,7 +22,7 @@ namespace MpiKthElement
             int count = temp.Length;
             if (count == 0)
             {
-                throw new InvalidOperationException("Empty collection");
+                return 0;
             }
             else if (count % 2 == 0)
             {
