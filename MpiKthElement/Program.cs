@@ -56,6 +56,10 @@ namespace MpiKthElement
                         throw (new Exception("k must be integer"));
                     }
 
+                    if (k > n)
+                    {
+                        throw new Exception("k must be less or equal than n");
+                    }
                 }
 
                 //ScatterV (calculate items for non divisible arrays)
@@ -75,6 +79,9 @@ namespace MpiKthElement
                 }
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} : {1}", Communicator.world.Rank, String.Join(",", distributedList));
+
+                //TODO: process in iteration
+                //Step 2
 
                 //compute median
                 //step 2.1 each processor computes the median mi of its ni elements
