@@ -26,6 +26,7 @@ namespace MpiKthElement
                 command.DiscardType = Discard.Type.None;
                 int n = 0;
                 int k = 0;
+                int initialUserInput = 0;
 
                 if (comm.Rank == 0)
                 {
@@ -37,6 +38,7 @@ namespace MpiKthElement
                         throw (new Exception("n must be integer"));
                     }
                     nList = Utilities.FillListWithRandomNumbers(n);
+                    initialUserInput = n;
                     Console.WriteLine("List : {0}", String.Join(",", nList));
 
                     //set k
@@ -53,14 +55,13 @@ namespace MpiKthElement
                     }
                 }
 
+                comm.Broadcast(ref initialUserInput, 0);
+
                 //ScatterV (calculate items for non divisible arrays)
                 sendcounts = new int[np];
                 int[] sendCounts = Utilities.CalcNoElems(n, np);
-
-
                 //send number of list items to each process
                 comm.Broadcast<int>(ref sendCounts, 0);
-
                 //scatter all n elements among the p processors each processor i with ni = n/p elements                
                 comm.ScatterFromFlattened<int>(nList.ToArray(), sendCounts, 0, ref distributedList);
 
@@ -70,9 +71,10 @@ namespace MpiKthElement
                 }
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} : {1}", Communicator.world.Rank, String.Join(",", distributedList));
-                int len = nList.Count;
+                //int len = nList.Count;
                 //TODO: process in iteration
                 //Step 2
+                int count = 0;
                 if (comm.Rank == 0)
                 {
                     sw.Start();
@@ -97,6 +99,7 @@ namespace MpiKthElement
                     {
                         weightedMedian = Utilities.ComputeWeightedMedian(listOfMedians, n);
                         Console.WriteLine("weighted median = {0}", weightedMedian);
+                        Console.WriteLine("Ready to compute solution in distributed way on loop {0}", ++count);
                     }
 
                     //step 2.4 processor 1 broadcast to all processors
@@ -156,8 +159,7 @@ namespace MpiKthElement
                         n = summGreater;
                         k = k - (summLess + summEqual);
                     }
-                    len = comm.Reduce(distributedList.Count(), Operation<int>.Add, 0);
-                } while (n < len / np);
+                } while (n > initialUserInput / np);
                 int[][] rem;
                 rem = comm.Gather(distributedList, 0);
 

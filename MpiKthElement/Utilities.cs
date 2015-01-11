@@ -41,12 +41,12 @@ namespace MpiKthElement
             var sorted = source.OrderBy(x => x.Median);
 
             var medians = sorted.Select(x => x.Median).ToArray();
-            var weights = sorted.Select(x => x.ElemCount / n).ToArray();
+            var weights = sorted.Select(x => (decimal)x.ElemCount / (decimal) n).ToArray();
 
-            double S = weights.Sum();
+            decimal S = weights.Sum();
 
             int k = 0;
-            double sum = S - weights[0]; // sum is the total weight of all `x[i] > x[k]`
+            decimal sum = S - weights[0]; // sum is the total weight of all `x[i] > x[k]`
 
             while(sum > S/2)
             {
