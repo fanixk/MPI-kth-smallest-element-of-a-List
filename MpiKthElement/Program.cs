@@ -72,7 +72,6 @@ namespace MpiKthElement
                 comm.Barrier();
                 Console.WriteLine("List from p:{0} : {1}", Communicator.world.Rank, String.Join(",", distributedList));
                 //int len = nList.Count;
-                //TODO: process in iteration
                 //Step 2
                 int count = 0;
                 if (comm.Rank == 0)
